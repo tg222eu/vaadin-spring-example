@@ -1,5 +1,6 @@
 package hello;
 
+import com.vaadin.ui.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
@@ -8,26 +9,18 @@ import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalLayout;
 
 @SpringUI
 @Theme("valo")
 public class VaadinUI extends UI {
 
 	private final CustomerRepository repo;
-
 	private final CustomerEditor editor;
-
 	private final Grid grid;
-
 	private final TextField filter;
-
 	private final Button addNewBtn;
+	private final Button searchBtn;
+	private final TextArea area = new TextArea("Info about person goes here");
 
 	@Autowired
 	public VaadinUI(CustomerRepository repo, CustomerEditor editor) {
@@ -36,21 +29,34 @@ public class VaadinUI extends UI {
 		this.grid = new Grid();
 		this.filter = new TextField();
 		this.addNewBtn = new Button("New customer", FontAwesome.PLUS);
+		this.searchBtn = new Button("Search", FontAwesome.SEARCH);
 	}
 
 	@Override
 	protected void init(VaadinRequest request) {
 		// build layout
-		HorizontalLayout actions = new HorizontalLayout(filter, addNewBtn);
-		VerticalLayout mainLayout = new VerticalLayout(actions, grid, editor);
+		HorizontalLayout actions = new HorizontalLayout(filter, searchBtn, addNewBtn);
+
+		VerticalLayout editorArea = new VerticalLayout(editor, area);
+		HorizontalLayout gridInfo = new HorizontalLayout(grid, editorArea);
+		VerticalLayout personListLayout = new VerticalLayout(actions, gridInfo);
+		HorizontalLayout listLayout = new HorizontalLayout(personListLayout);
+		VerticalLayout mainLayout = new VerticalLayout(listLayout);
 		setContent(mainLayout);
 
 		// Configure layouts and components
 		actions.setSpacing(true);
+		editorArea.setSpacing(true);
+		listLayout.setSpacing(true);
+		personListLayout.setSpacing(true);
+		gridInfo.setSpacing(true);
+
 		mainLayout.setMargin(true);
 		mainLayout.setSpacing(true);
+		mainLayout.setComponentAlignment(listLayout, Alignment.MIDDLE_CENTER);
 
-		grid.setHeight(300, Unit.PIXELS);
+
+		grid.setHeight(600, Unit.PIXELS);
 		grid.setColumns("id", "firstName", "lastName");
 
 		filter.setInputPrompt("Filter by last name");

@@ -47,7 +47,7 @@ public class CustomerEditor extends VerticalLayout {
 	public CustomerEditor(CustomerRepository repository) {
 		this.repository = repository;
 
-		addComponents(firstName, lastName, actions);
+		addComponents(actions, firstName, lastName);
 
 		// Configure and style components
 		setSpacing(true);

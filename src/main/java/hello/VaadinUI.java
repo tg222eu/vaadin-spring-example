@@ -10,6 +10,9 @@ import com.vaadin.server.FontAwesome;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 
+import java.util.Arrays;
+import java.util.List;
+
 @SpringUI
 @Theme("valo")
 public class VaadinUI extends UI {
@@ -19,8 +22,12 @@ public class VaadinUI extends UI {
 	private final Grid grid;
 	private final TextField filter;
 	private final Button addNewBtn;
+	private final Button delBtn;
+	private final Button undoBtn;
 	private final Button searchBtn;
+	private final Button applyBtn;
 	private final TextArea area = new TextArea("Info about person goes here");
+
 
 	@Autowired
 	public VaadinUI(CustomerRepository repo, CustomerEditor editor) {
@@ -29,20 +36,57 @@ public class VaadinUI extends UI {
 		this.grid = new Grid();
 		this.filter = new TextField();
 		this.addNewBtn = new Button("New customer", FontAwesome.PLUS);
+		this.delBtn = new Button("Delete", FontAwesome.TRASH_O);
+		this.undoBtn = new Button("Undo", FontAwesome.UNDO);
 		this.searchBtn = new Button("Search", FontAwesome.SEARCH);
+		this.applyBtn = new Button("Apply");
 	}
 
 	@Override
 	protected void init(VaadinRequest request) {
-		// build layout
+		// build layout for interface 1
 		HorizontalLayout actions = new HorizontalLayout(filter, searchBtn, addNewBtn);
-
 		VerticalLayout editorArea = new VerticalLayout(editor, area);
 		HorizontalLayout gridInfo = new HorizontalLayout(grid, editorArea);
 		VerticalLayout personListLayout = new VerticalLayout(actions, gridInfo);
 		HorizontalLayout listLayout = new HorizontalLayout(personListLayout);
-		VerticalLayout mainLayout = new VerticalLayout(listLayout);
-		setContent(mainLayout);
+		VerticalLayout root = new VerticalLayout(listLayout);
+
+		// build layout for interface 2
+
+		Table table = new Table("List of database");
+		table.setStyleName("iso3166");
+		table.setWidth("50%");
+		table.setHeight("170px");
+		table.setSelectable(true);
+		table.setMultiSelect(true);
+		table.setImmediate(true); // react at once when something is selected
+
+		table.setContainerDataSource(new BeanItemContainer(Customer.class, repo.findAll()));
+
+		table.setColumnReorderingAllowed(true);
+		table.setColumnCollapsingAllowed(true);
+		table.setColumnHeaders("id", "firstName", "lastName" );
+
+		HorizontalLayout searchAndList = new HorizontalLayout(filter, new PopupViewClosingExample());
+		VerticalLayout tableVertLay = new VerticalLayout(searchAndList, table);
+		VerticalLayout buttonLayout = new VerticalLayout(searchBtn, delBtn, undoBtn);
+		HorizontalLayout hLayout = new HorizontalLayout(buttonLayout, tableVertLay);
+		VerticalLayout root2 = new VerticalLayout(hLayout, applyBtn);
+
+		root2.setMargin(true);
+		root2.setSpacing(true);
+		root2.setComponentAlignment(hLayout, Alignment.MIDDLE_CENTER);
+		root2.setComponentAlignment(applyBtn, Alignment.MIDDLE_CENTER);
+
+		searchAndList.setSpacing(true);
+		tableVertLay.setSpacing(true);
+		buttonLayout.setSpacing(true);
+		hLayout.setSpacing(true);
+		root2.setSpacing(true);
+
+		// Set interface 1 or 2 (root, root2)
+		setContent(root2);
 
 		// Configure layouts and components
 		actions.setSpacing(true);
@@ -51,9 +95,9 @@ public class VaadinUI extends UI {
 		personListLayout.setSpacing(true);
 		gridInfo.setSpacing(true);
 
-		mainLayout.setMargin(true);
-		mainLayout.setSpacing(true);
-		mainLayout.setComponentAlignment(listLayout, Alignment.MIDDLE_CENTER);
+		root.setMargin(true);
+		root.setSpacing(true);
+		root.setComponentAlignment(listLayout, Alignment.MIDDLE_CENTER);
 
 
 		grid.setHeight(600, Unit.PIXELS);
